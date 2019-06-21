@@ -8,6 +8,10 @@
     "eject": "cgb-scripts eject"
   },
   "dependencies": {
-    "cgb-scripts": "1.18.1"
+    "cgb-scripts": "1.18.1",
+    "prop-types": "^15.7.2"
+  },
+  "devDependencies": {
+    "prettier": "^1.18.2"
   }
 }

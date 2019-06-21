@@ -1,11 +1,11 @@
 <?php
 /**
- * Plugin Name: wenskaarten-app — CGB Gutenberg Block Plugin
- * Plugin URI: https://github.com/ahmadawais/create-guten-block/
- * Description: wenskaarten-app — is a Gutenberg plugin created via create-guten-block.
- * Author: mrahmadawais, maedahbatool
- * Author URI: https://AhmadAwais.com/
+ * Plugin Name: Wenskaarten
+ * Plugin URI: https://stefringoot.com/wenskaarten/
+ * Description: A plugin that lets visitors create an ecard and send it via email.
  * Version: 1.0.0
+ * Author: Joost Kersjes - 400029867@st.roc.a12.nl
+ * Author URI: https://github.com/400029867
  * License: GPL2+
  * License URI: https://www.gnu.org/licenses/gpl-2.0.txt
  *
@@ -17,7 +17,4 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/**
- * Block Initializer.
- */
 require_once plugin_dir_path( __FILE__ ) . 'src/init.php';
