@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 const Card = props => {
 	return (
 		<div className="card-view">
-			<h3>Card</h3>
+			<h3>Kies een kaart</h3>
 			<p>Theme: {props.theme}</p>
-			<button onClick={() => props.handleNextView(4)}>Next</button>
-			<button onClick={props.handlePreviousView}>Previous</button>
+			<button onClick={() => props.handleNextView(4)}>Volgende</button>
+			<button onClick={props.handlePreviousView}>Terug</button>
 		</div>
 	);
 };

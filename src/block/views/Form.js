@@ -5,8 +5,8 @@ const Form = props => {
 		<div className="form-view">
 			<h3>Form</h3>
 			<p>Card: {props.card}</p>
-			<button onClick={() => props.handleSendCard()}>Send</button>
-			<button onClick={props.handlePreviousView}>Previous</button>
+			<button onClick={() => props.handleSendCard()}>Stuur wenskaart</button>
+			<button onClick={props.handlePreviousView}>Terug</button>
 		</div>
 	);
 };

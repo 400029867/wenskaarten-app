@@ -8,6 +8,7 @@
     "eject": "cgb-scripts eject"
   },
   "dependencies": {
+    "axios": "^0.19.0",
     "cgb-scripts": "1.18.1",
     "prop-types": "^15.7.2"
   },

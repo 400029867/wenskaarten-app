@@ -1,10 +1,11 @@
+const { Component } = wp.element;
 import PropTypes from 'prop-types';
 
 import Card from './views/Card';
 import Form from './views/Form';
 import Theme from './views/Theme';
 
-class App extends React.Component {
+class App extends Component {
 	constructor(props) {
 		super(props);
 

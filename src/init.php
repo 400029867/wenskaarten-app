@@ -1,10 +1,6 @@
 <?php
 /**
- * Blocks Initializer
- *
- * Enqueue CSS/JS of all the blocks.
- *
- * @since   1.0.0
+ * @since 1.0.0
  * @package CGB
  */
 
@@ -14,13 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Enqueue Gutenberg block assets for both frontend + backend.
- *
- * Assets enqueued:
- * 1. blocks.style.build.css - Frontend + Backend.
- * 2. blocks.build.js - Backend.
- * 3. blocks.editor.build.css - Backend.
- *
  * @uses {wp-blocks} for block type registration & related functions.
  * @uses {wp-element} for WP Element abstraction — structure of blocks.
  * @uses {wp-i18n} to internationalize the block's text.
@@ -54,12 +43,6 @@ function wenskaarten_app_cgb_block_assets() { // phpcs:ignore
 	);
 
 	/**
-	 * Register Gutenberg block on server-side.
-	 *
-	 * Register the block on server-side to ensure that the block
-	 * scripts and styles for both frontend and backend are
-	 * enqueued when the editor loads.
-	 *
 	 * @link https://wordpress.org/gutenberg/handbook/blocks/writing-your-first-block-type#enqueuing-block-scripts
 	 * @since 1.16.0
 	 */
@@ -77,3 +60,176 @@ function wenskaarten_app_cgb_block_assets() { // phpcs:ignore
 
 // Hook: Block assets.
 add_action( 'init', 'wenskaarten_app_cgb_block_assets' );
+
+/**
+ * Add the options page
+ */
+function wenskaarten_app_register_options_page() {
+	add_options_page('Wenskaarten opties', '(plugin) Wenskaarten', 'manage_options', 'wenskaarten', 'wenskaarten_app_options_page');
+}
+
+/**
+ * Options page contents
+ */
+function wenskaarten_app_options_page() {
+	global $wpdb;
+
+	//$themes = $wpdb->get_results('SELECT id, name FROM '.$wpdb->prefix.'wenskaarten-theme', ARRAY_A);
+
+	$themes = [['id' => 1, 'name' => 'Placeholder'], ['id' => 2, 'name' => 'Nieuw thema']];
+
+	//$cards = $wpdb->get_results('SELECT id, name, theme, url FROM '.$wpdb->prefix.'wenskaarten-card', ARRAY_A);
+	
+	$cards = [['id' => 1, 'name' => 'Testkaart', 'theme' => 1, 'url' => 'https://google.com/'], ['id' => 2, 'name' => 'Nieuw Wenskaart', 'theme' => 2, 'url' => 'https://google.com/']];
+
+	handleSettingsFormSubmit($_POST);
+
+	?>
+	<div>
+		<h2>Thema's en Wenskaarten beheren</h2>
+		<h3>Thema's</h3>
+		<p>Maak nieuw thema aan:</p>
+		<table>
+			<form method="post" action="">
+				<tr valign="top">
+					<th scope="row"><label for="wenskaarten_new_theme_name">Naam</label></th>
+					<td><input type="text" id="wenskaarten_new_theme_name" name="wenskaarten_new_theme_name" /></td>
+				</tr>
+				<tr>
+					<td />
+					<td><?php submit_button('Voeg toe', 'primary', 'submit', false); ?></td>
+				</tr>
+			</form>
+		</table>
+		<br />
+		<p>Verwijder bestaand thema:</p>
+		<table>
+			<tr>
+				<th>Naam</th>
+				<th>Aantal kaarten</th>
+				<th />
+			</tr>
+			<?php 
+			foreach($themes as $theme) { 
+				$theme_cards = count(array_filter(
+					$cards, 
+					function ($card) use (&$theme) { 
+						return $card['theme'] === $theme['id']; 
+					} 
+				));
+				?>
+				<tr>
+					<form method="post" action="database.php">
+						<input type="hidden" name="wenskaarten_delete_theme_id" value=<?= $theme['id'] ?> />
+						<td><strong><?= $theme['name'] ?></strong></td>
+						<td align="center"><?= $theme_cards ?></td>
+						<td><?php submit_button('Verwijder', 'delete', 'submit', false); ?></td>
+					</form>
+				</tr>
+			<?php } ?>
+		</table>
+		<br />
+		<h3>Wenskaarten</h3>
+		<p>Voeg kaarten toe:</p>
+		<table>
+			<form method="post" action="database.php" id="wenskaarten_new_card">
+				<tr>
+					<th scope="row"><label for="wenskaarten_new_card_theme">Thema</label></th>
+					<td>
+						<select form="wenskaarten_new_card" id="wenskaarten_new_card_theme" name="wenskaarten_new_card_theme">
+							<?php foreach($themes as $theme) { ?>
+								<option value=<?= $theme['id'] ?>><?= $theme['name'] ?></option>
+							<?php } ?>
+						</select>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="wenskaarten_new_card_name">Naam</label></th>
+					<td><input type="text" id="wenskaarten_new_card_name" name="wenskaarten_new_card_name" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="wenskaarten_new_card_url">URL</label></th>
+					<td><input type="text" id="wenskaarten_new_card_url" name="wenskaarten_new_card_url" /></td>
+				</tr>
+				<tr><td /><td><?php submit_button('Voeg toe', 'primary', 'submit', false); ?></td></tr>
+			</form>
+		</table>
+		<br />
+		<p>Verwijder bestaande wenskaarten:</p>
+		<table>
+			<tr>
+				<th>Thema</th>
+				<th>Naam</th>
+				<th>URL</th>
+				<th />
+			</tr>
+			<?php 
+			foreach($cards as $card) {
+				$card_theme = current(array_filter(
+					$themes, 
+					function ($theme) use (&$card) { 
+						return $theme['id'] === $card['theme']; 
+					} 
+				));
+				?>
+				<tr>
+					<form method="post" action="database.php">
+						<input type="hidden" name="wenskaarten_delete_card_id" value=<?= $card['id'] ?> />
+						<td><?= $card_theme['name'] ?></td>
+						<td><strong><?= $card['name'] ?></strong></td>
+						<td><a href=<?= $card['url'] ?>><?= $card['url'] ?></a></td>
+						<td><?php submit_button('Verwijder', 'delete', 'submit', false); ?></td>
+					</form>
+				</tr>
+			<?php } ?>
+		</table>
+  </div>
+	<?php
+}
+
+function handleSettingsFormSubmit($post) {
+	if (!empty($post)) {
+		if (!empty($post['wenskaarten_new_theme_name'])) {
+			var_dump('found me!');
+			return;
+		}
+	}
+}
+
+// Hook: Settings page.
+add_action( 'admin_menu', 'wenskaarten_app_register_options_page' );
+
+/**
+ * Create tables for the plugin
+ */
+function jal_install () {
+	global $wpdb;
+
+	$theme_table_name = $wpdb->prefix . 'wenskaarten-theme';
+	$card_table_name = $wpdb->prefix . 'wenskaarten-card';
+
+	$charset_collate = $wpdb->get_charset_collate();
+
+	$theme_sql = "CREATE TABLE $theme_table_name (
+		id mediumint(9) NOT NULL AUTO_INCREMENT,
+		name tinytext NOT NULL,
+		timestamp datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+		PRIMARY KEY  (id)
+	) $charset_collate;";
+
+	$card_sql = "CREATE TABLE $card_table_name (
+		id mediumint(9) NOT NULL AUTO_INCREMENT,
+		name tinytext NOT NULL,
+		url varchar(255) DEFAULT '' NOT NULL,
+		theme mediumint(9) NOT NULL,
+		timestamp datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+		PRIMARY KEY  (id)
+	) $charset_collate;";
+
+	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
+	dbDelta( $theme_sql );
+	dbDelta( $card_sql );
+}
+
+// Hook: Database tables.
+register_activation_hook( __FILE__, 'jal_install' );
