@@ -83,7 +83,7 @@ function wenskaarten_app_options_page() {
 				<p style="display:inline-block;color:white;margin:20px"><?= $post_result['message'] ?></p>
 			</div>
 		<?php } ?>
-		<h2>Thema's en Wenskaarten beheren</h2>
+		<h1>Thema's en Wenskaarten beheren</h1>
 		<h3>Thema's</h3>
 		<p>Maak nieuw thema aan:</p>
 		<table>
@@ -118,13 +118,14 @@ function wenskaarten_app_options_page() {
 				<tr>
 					<form method="post" action="">
 						<input type="hidden" name="wenskaarten_delete_theme_id" value=<?= $theme['id'] ?> />
-						<td><strong><?= $theme['name'] ?></strong></td>
+						<th style="color:darkgreen"><?= $theme['name'] ?></th>
 						<td align="center"><?= $theme_cards ?></td>
 						<td><?php submit_button('Verwijder', 'delete', 'submit', false); ?></td>
 					</form>
 				</tr>
 			<?php } ?>
 		</table>
+		<p><em>Bij het verwijderen van een thema worden ook zijn wenskaarten verwijderd.</em></p>
 		<br />
 		<h3>Wenskaarten</h3>
 		<p>Voeg kaarten toe:</p>
@@ -164,7 +165,7 @@ function wenskaarten_app_options_page() {
 			?>
 			<table>
 				<tr>
-				<th colspan="3"><?= $theme['name'] ?></th>
+				<th colspan="3" style="color:darkgreen"><?= $theme['name'] ?></th>
 				</tr>
 				<tr>
 					<th>Naam</th>
@@ -187,6 +188,7 @@ function wenskaarten_app_options_page() {
 					</tr>
 				<?php } ?>
 			</table>
+			<br />
 		<?php } ?>
   </div>
 	<?php

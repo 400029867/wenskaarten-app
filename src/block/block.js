@@ -15,7 +15,7 @@ const { registerBlockType } = wp.blocks;
  *                             registered; otherwise `undefined`.
  */
 registerBlockType('cgb/block-wenskaarten-app', {
-	title: __('wenskaarten-app - CGB Block'),
+	title: __('Wenskaarten app blok'),
 	icon: 'shield',
 	category: 'common',
 	keywords: [__('wenskaarten-app'), __('Ecard'), __('e-card')],
