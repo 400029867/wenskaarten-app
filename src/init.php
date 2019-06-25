@@ -393,3 +393,16 @@ function getCardsFromDb() {
 
 // Hook: Settings page.
 add_action( 'admin_menu', 'wenskaarten_app_register_options_page' );
+
+// Hook: API endpoints so the data can be used in the React for the block
+add_action( 'rest_api_init', function () {
+  register_rest_route( 'wenskaarten', '/themes', array(
+    'methods' => 'GET',
+    'callback' => 'getThemesFromDb'
+	) );
+	
+	register_rest_route( 'wenskaarten', '/cards', array(
+    'methods' => 'GET',
+    'callback' => 'getCardsFromDb'
+  ) );
+} );

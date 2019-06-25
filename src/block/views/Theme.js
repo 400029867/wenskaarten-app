@@ -6,40 +6,43 @@ class Theme extends Component {
 	constructor(props) {
 		super(props);
 
-		this.themes = [];
-
 		this.state = {
 			loading: true,
+			themes: [],
 		};
 	}
 
 	componentDidMount() {
-		axios.get('https://www.google.com/').then(response => {
-			console.log(response.data);
-		});
+		const DEVELOP_URL_PREFIX = '/_WordPress/wenskaart-app';
+		axios
+			.get(DEVELOP_URL_PREFIX + '/wp-json/wenskaarten/themes')
+			.then(response => {
+				this.setState({
+					loading: false,
+					themes: response.data,
+				});
+			});
 	}
 
 	render() {
-		const { themes } = this;
-		const { loading } = this.state;
+		const { loading, themes } = this.state;
 		const { handleNextView } = this.props;
 
 		return (
 			<div className="theme-view">
 				<h3>Kies een thema</h3>
 				{loading && <p>Laden ...</p>}
-				{!loading && themes.length > 0 && (
+				{!loading && (
 					<div className="theme-list">
-						{themes.map(theme => {
+						{themes.map(theme => (
 							<div key={theme.id} className={`theme-card theme-${theme.name}`}>
 								<button onClick={() => handleNextView(theme.id)}>
 									{theme.name}
 								</button>
-							</div>;
-						})}
+							</div>
+						))}
 					</div>
 				)}
-				<button onClick={() => handleNextView(11)}>Volgende</button>
 			</div>
 		);
 	}
