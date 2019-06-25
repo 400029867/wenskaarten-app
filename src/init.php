@@ -72,27 +72,24 @@ function wenskaarten_app_register_options_page() {
  * Options page contents
  */
 function wenskaarten_app_options_page() {
-	global $wpdb;
-
-	//$themes = $wpdb->get_results('SELECT id, name FROM '.$wpdb->prefix.'wenskaarten-theme', ARRAY_A);
-
-	$themes = [['id' => 1, 'name' => 'Placeholder'], ['id' => 2, 'name' => 'Nieuw thema']];
-
-	//$cards = $wpdb->get_results('SELECT id, name, theme, url FROM '.$wpdb->prefix.'wenskaarten-card', ARRAY_A);
-	
-	$cards = [['id' => 1, 'name' => 'Testkaart', 'theme' => 1, 'url' => 'https://google.com/'], ['id' => 2, 'name' => 'Nieuw Wenskaart', 'theme' => 2, 'url' => 'https://google.com/']];
-
-	handleSettingsFormSubmit($_POST);
+	$post_result = handleSettingsFormSubmit();
+	$themes = getThemesFromDb();
+	$cards = getCardsFromDb();
 
 	?>
 	<div>
+		<?php if(null !== $post_result) { ?>
+			<div class="messages-box" style="display:inline-block;background:<?= $post_result['success'] === true ? 'green' : 'red'; ?>">
+				<p style="display:inline-block;color:white;margin:20px"><?= $post_result['message'] ?></p>
+			</div>
+		<?php } ?>
 		<h2>Thema's en Wenskaarten beheren</h2>
 		<h3>Thema's</h3>
 		<p>Maak nieuw thema aan:</p>
 		<table>
 			<form method="post" action="">
 				<tr valign="top">
-					<th scope="row"><label for="wenskaarten_new_theme_name">Naam</label></th>
+					<th scope="row"><label for="wenskaarten_new_theme_name">Naam <span style="color:red">*</span></label></th>
 					<td><input type="text" id="wenskaarten_new_theme_name" name="wenskaarten_new_theme_name" /></td>
 				</tr>
 				<tr>
@@ -107,7 +104,7 @@ function wenskaarten_app_options_page() {
 			<tr>
 				<th>Naam</th>
 				<th>Aantal kaarten</th>
-				<th />
+				<th>Actie</th>
 			</tr>
 			<?php 
 			foreach($themes as $theme) { 
@@ -119,7 +116,7 @@ function wenskaarten_app_options_page() {
 				));
 				?>
 				<tr>
-					<form method="post" action="database.php">
+					<form method="post" action="">
 						<input type="hidden" name="wenskaarten_delete_theme_id" value=<?= $theme['id'] ?> />
 						<td><strong><?= $theme['name'] ?></strong></td>
 						<td align="center"><?= $theme_cards ?></td>
@@ -132,9 +129,9 @@ function wenskaarten_app_options_page() {
 		<h3>Wenskaarten</h3>
 		<p>Voeg kaarten toe:</p>
 		<table>
-			<form method="post" action="database.php" id="wenskaarten_new_card">
+			<form method="post" action="" id="wenskaarten_new_card">
 				<tr>
-					<th scope="row"><label for="wenskaarten_new_card_theme">Thema</label></th>
+					<th scope="row"><label for="wenskaarten_new_card_theme">Thema <span style="color:red">*</span></label></th>
 					<td>
 						<select form="wenskaarten_new_card" id="wenskaarten_new_card_theme" name="wenskaarten_new_card_theme">
 							<?php foreach($themes as $theme) { ?>
@@ -144,7 +141,7 @@ function wenskaarten_app_options_page() {
 					</td>
 				</tr>
 				<tr>
-					<th scope="row"><label for="wenskaarten_new_card_name">Naam</label></th>
+					<th scope="row"><label for="wenskaarten_new_card_name">Naam <span style="color:red">*</span></label></th>
 					<td><input type="text" id="wenskaarten_new_card_name" name="wenskaarten_new_card_name" /></td>
 				</tr>
 				<tr>
@@ -156,80 +153,241 @@ function wenskaarten_app_options_page() {
 		</table>
 		<br />
 		<p>Verwijder bestaande wenskaarten:</p>
-		<table>
-			<tr>
-				<th>Thema</th>
-				<th>Naam</th>
-				<th>URL</th>
-				<th />
-			</tr>
-			<?php 
-			foreach($cards as $card) {
-				$card_theme = current(array_filter(
-					$themes, 
-					function ($theme) use (&$card) { 
-						return $theme['id'] === $card['theme']; 
-					} 
-				));
-				?>
+		<?php 
+		foreach($themes as $theme) { 
+			$theme_cards = array_filter(
+				$cards, 
+				function ($card) use (&$theme) { 
+					return $card['theme'] === $theme['id']; 
+				} 
+			);
+			?>
+			<table>
 				<tr>
-					<form method="post" action="database.php">
-						<input type="hidden" name="wenskaarten_delete_card_id" value=<?= $card['id'] ?> />
-						<td><?= $card_theme['name'] ?></td>
-						<td><strong><?= $card['name'] ?></strong></td>
-						<td><a href=<?= $card['url'] ?>><?= $card['url'] ?></a></td>
-						<td><?php submit_button('Verwijder', 'delete', 'submit', false); ?></td>
-					</form>
+				<th colspan="3"><?= $theme['name'] ?></th>
 				</tr>
-			<?php } ?>
-		</table>
+				<tr>
+					<th>Naam</th>
+					<th>URL</th>
+					<th>Actie</th>
+				</tr>
+				<?php foreach($theme_cards as $card) { ?>
+					<tr>
+						<form method="post" action="">
+							<input type="hidden" name="wenskaarten_delete_card_id" value=<?= $card['id'] ?> />
+							<td><strong><?= $card['name'] ?></strong></td>
+							<td><a href=<?= $card['url'] ?>><?= $card['url'] ?></a></td>
+							<td><?php submit_button('Verwijder', 'delete', 'submit', false); ?></td>
+						</form>
+					</tr>
+				<?php } ?>
+				<?php if(empty($theme_cards)) { ?>
+					<tr>
+						<td colspan="3">Dit thema heeft nog geen wenskaarten</td>
+					</tr>
+				<?php } ?>
+			</table>
+		<?php } ?>
   </div>
 	<?php
 }
 
-function handleSettingsFormSubmit($post) {
-	if (!empty($post)) {
-		if (!empty($post['wenskaarten_new_theme_name'])) {
-			var_dump('found me!');
-			return;
-		}
+function handleSettingsFormSubmit() {
+	if (empty($_POST)) {
+		return null;
 	}
+
+	global $wpdb;
+
+	$theme_table_name = $wpdb->prefix . 'wenskaarten_theme';
+	$card_table_name = $wpdb->prefix . 'wenskaarten_card';
+
+	// Handle create new theme
+	if (array_key_exists('wenskaarten_new_theme_name', $_POST)) {
+		$name = $_POST['wenskaarten_new_theme_name'];
+		
+		// TODO: Validation
+		if (empty($name)) {
+			return [
+				'success' => false,
+				'message' => "Name cannot be empty."
+			];
+		}
+		$wpdb->show_errors();
+
+		// Insert the theme
+		$result = $wpdb->insert(
+			$theme_table_name, 
+			['name' => $name],
+			['%s']
+		);
+		if (false === $result) {
+			return [
+				'success' => false,
+				'message' => "Could not create a theme with name $name"
+			];
+		}
+
+		// Success
+		return [
+			'success' => true, 
+			'message' => "Created the following theme: $name"
+		];
+	}
+
+	// Handle delete theme
+	if (array_key_exists('wenskaarten_delete_theme_id', $_POST)) {
+		$id = $_POST['wenskaarten_delete_theme_id'];
+
+		// Make sure the id is numeric
+		if (false === ctype_digit($id)) {
+			return [
+				'success' => false, 
+				'message' => "Error trying to delete the theme:Theme with id $id not found."
+			];
+		}
+
+		// Delete the cards in the theme
+		$card_result = $wpdb->delete(
+			$card_table_name,
+			['theme' => $id],
+			['%d']
+		);
+		if (false === $card_result) {
+			return [
+				'success' => false, 
+				'message' => "Error trying to delete the theme: Card(s) could not be deleted."
+			];
+		}
+
+		// Delete the theme
+		$theme_result = $wpdb->delete(
+			$theme_table_name,
+			['id' => $id],
+			['%d']
+		);
+		if (false === $theme_result) {
+			return [
+				'success' => false,
+				'message' => "Error trying to delete the theme: Theme could not be deleted."
+			];
+		}
+
+		// Success
+		return [
+			'success' => true,
+			'message' => "Deleted $theme_result theme and $card_result card(s)"
+		];
+	}
+
+	// Handle create new card
+	if (array_key_exists('wenskaarten_new_card_theme', $_POST) && array_key_exists('wenskaarten_new_card_name', $_POST)) {
+		$name = $_POST['wenskaarten_new_card_name'];
+		$theme = $_POST['wenskaarten_new_card_theme'];
+		$url = $_POST['wenskaarten_new_card_url'];
+		if (empty($url)) {
+			$url = null;
+		}
+
+		// TODO: Validation for name
+		if (empty($name)) {
+			return [
+				'success' => false,
+				'message' => "Name cannot be empty."
+			];
+		}
+
+		// Make sure theme is a number
+		if (false === ctype_digit($theme)) {
+			return [
+				'succes' => false,
+				'message' => "Theme id is not a number:\n$theme",
+				'field' => 'wenskaarten_new_card_theme'
+			];
+		}
+
+		// Validate the url if given
+		if (null !== $url && !filter_var($url, FILTER_VALIDATE_URL)) {
+			return [
+				'succes' => false,
+				'message' => "Given URL is not valid:\n$url",
+				'field' => 'wenskaarten_new_card_url'
+			];
+		}
+
+		// Insert the card
+		$result = $wpdb->insert(
+			$card_table_name, 
+			[
+				'name' => $name, 
+				'theme' => $theme, 
+				'url' => $url
+			],
+			['%s', '%d', '%s']
+		);
+		if (false === $result) {
+			return [
+				'success' => false,
+				'message' => "Could not create a card with name $name under theme $theme."
+			];
+		}
+
+		// Success
+		return [
+			'success' => true, 
+			'message' => "Created a new card under theme $theme with the name $name."
+		];
+	}
+
+	if (array_key_exists('wenskaarten_delete_card_id', $_POST)) {
+		$id = $_POST['wenskaarten_delete_card_id'];
+
+		// Make sure the id is numeric
+		if (false === ctype_digit($id)) {
+			return [
+				'success' => false, 
+				'message' => "Given card id is not a number:\n$id"
+			];
+		}
+
+		// Delete the card
+		$result = $wpdb->delete(
+			$card_table_name,
+			['id' => $id],
+			['%d']
+		);
+		if (false === $result) {
+			return [
+				'success' => false, 
+				'message' => "Error trying to delete the card."
+			];
+		}
+
+		// Success
+		return [
+			'success' => true,
+			'message' => "Successfully deleted the card."
+		];
+	}
+
+	// $_POST has unhandled data
+	return [
+		'success' => false,
+		'message' => 'Found unhandled request, check the "name" attribute of your input.'
+	];
+}
+
+function getThemesFromDb() {
+	global $wpdb;
+
+	return $wpdb->get_results('SELECT id, name FROM '.$wpdb->prefix.'wenskaarten_theme', ARRAY_A);
+}
+
+function getCardsFromDb() {
+	global $wpdb;
+
+	return $wpdb->get_results('SELECT id, name, theme, url FROM '.$wpdb->prefix.'wenskaarten_card', ARRAY_A);
 }
 
 // Hook: Settings page.
 add_action( 'admin_menu', 'wenskaarten_app_register_options_page' );
-
-/**
- * Create tables for the plugin
- */
-function jal_install () {
-	global $wpdb;
-
-	$theme_table_name = $wpdb->prefix . 'wenskaarten-theme';
-	$card_table_name = $wpdb->prefix . 'wenskaarten-card';
-
-	$charset_collate = $wpdb->get_charset_collate();
-
-	$theme_sql = "CREATE TABLE $theme_table_name (
-		id mediumint(9) NOT NULL AUTO_INCREMENT,
-		name tinytext NOT NULL,
-		timestamp datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-		PRIMARY KEY  (id)
-	) $charset_collate;";
-
-	$card_sql = "CREATE TABLE $card_table_name (
-		id mediumint(9) NOT NULL AUTO_INCREMENT,
-		name tinytext NOT NULL,
-		url varchar(255) DEFAULT '' NOT NULL,
-		theme mediumint(9) NOT NULL,
-		timestamp datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-		PRIMARY KEY  (id)
-	) $charset_collate;";
-
-	require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-	dbDelta( $theme_sql );
-	dbDelta( $card_sql );
-}
-
-// Hook: Database tables.
-register_activation_hook( __FILE__, 'jal_install' );
