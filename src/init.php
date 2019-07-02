@@ -48,11 +48,8 @@ function wenskaarten_app_cgb_block_assets() { // phpcs:ignore
 	 */
 	register_block_type(
 		'cgb/block-wenskaarten-app', array(
-			// Enqueue blocks.style.build.css on both frontend & backend.
 			'style'         => 'wenskaarten_app-cgb-style-css',
-			// Enqueue blocks.build.js in the editor only.
 			'editor_script' => 'wenskaarten_app-cgb-block-js',
-			// Enqueue blocks.editor.build.css in the editor only.
 			'editor_style'  => 'wenskaarten_app-cgb-block-editor-css',
 		)
 	);
@@ -391,6 +388,39 @@ function getCardsFromDb() {
 	return $wpdb->get_results('SELECT id, name, theme, url FROM '.$wpdb->prefix.'wenskaarten_card', ARRAY_A);
 }
 
+function getCardsByThemeFromDb($request) {
+	global $wpdb;
+
+	$theme_id = $request['theme_id'];
+	$table_name = $wpdb->prefix.'wenskaarten_card';
+
+	return $wpdb->get_results("SELECT id, name, url FROM $table_name WHERE theme = $theme_id", ARRAY_A);
+}
+
+function sendEcardMail($request) {
+	$params = $request->get_body_params();
+
+	if (!function_exists('mail') || !function_exists('wp_mail')) {
+		return [
+			'success' => false,
+			'message' => 'Mail function doesnt exist.',
+		];
+	}
+	
+  $email = $params['from'];
+	$message = $params['message'];
+  $to = $params['to'];
+  $subject = $params['subject'];
+
+  $headers = 'From: '. $email . "\r\n" .
+    'Reply-To: ' . $email . "\r\n";
+ 
+	$sent = wp_mail($to, $subject, strip_tags($message));
+	$params['sent'] = $sent;
+
+	return $params;				
+}
+
 // Hook: Settings page.
 add_action( 'admin_menu', 'wenskaarten_app_register_options_page' );
 
@@ -401,8 +431,31 @@ add_action( 'rest_api_init', function () {
     'callback' => 'getThemesFromDb'
 	) );
 	
-	register_rest_route( 'wenskaarten', '/cards', array(
+	register_rest_route('wenskaarten', '/cards', array(
     'methods' => 'GET',
     'callback' => 'getCardsFromDb'
-  ) );
+	) );
+	
+	register_rest_route('wenskaarten', '/cards/(?P<theme_id>\d+)', [
+		'methods' => 'GET',
+		'callback' => 'getCardsByThemeFromDb',
+		'args' => [
+			'theme_id' => [
+				'validate_callback' => function($param, $request, $key) {
+					return is_numeric( $param );
+				}
+			],
+		],
+	]);
+
+	register_rest_route('wenskaarten', '/send', [
+		'methods' => 'POST',
+		'callback' => 'sendEcardMail',
+		'args' => [
+			'to' => [],
+			'from' => [],
+			'subject' => [],
+			'message' => [],
+		],
+	]);
 } );

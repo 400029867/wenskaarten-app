@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import Card from './views/Card';
 import Form from './views/Form';
 import Theme from './views/Theme';
+import axios from 'axios';
 
 class App extends Component {
 	constructor(props) {
@@ -32,12 +33,22 @@ class App extends Component {
 	}
 
 	handleSendCard() {
-		if (this.props.viewOnly) {
-			console.log('Not sending an email in viewOnly mode.');
-			return;
-		}
+		// if (this.props.viewOnly) {
+		// 	console.log('Not sending an email in viewOnly mode.');
+		// 	return;
+		// }
 
-		console.log('Send emails');
+		const DEVELOP_URL_PREFIX = '/_WordPress/wenskaart-app';
+		axios
+			.post(DEVELOP_URL_PREFIX + '/wp-json/wenskaarten/send', {
+				to: '400029867@st.roc.a12.nl',
+				from: 'joostkersjes@live.nl',
+				subject: 'This is a test...',
+				message: 'Here is where we put the message of the mail.',
+			})
+			.then(response => {
+				console.log(response.data);
+			});
 	}
 
 	render() {

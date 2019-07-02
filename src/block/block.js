@@ -24,9 +24,10 @@ registerBlockType('cgb/block-wenskaarten-app', {
 	 * @link https://wordpress.org/gutenberg/handbook/block-api/block-edit-save/
 	 */
 	edit: function(props) {
-		return <App viewOnly />;
+		return <App />;
 	},
 
+	// FIXME: The 'save' prop only loads pure HTML. This means our dynamic React will not work.
 	/**
 	 * @link https://wordpress.org/gutenberg/handbook/block-api/block-edit-save/
 	 */
