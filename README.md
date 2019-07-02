@@ -1,3 +1,23 @@
+## Important project documentation:
+
+This project was built to be a dynamic custom Gutenberg block for WordPress.
+
+It was not possible to meet all of the clients needs and functionality.
+
+If you are planning on a follow-up project, here are my notes:
+
+- The database part of the plugin works.
+- The settings page can handle all of the database requests.
+- You will definately need a plugin to handle the previous two things. Feel free to use my implementation as examples or to reuse them.
+- Because a dynamic block cannot render Javascript, my implementation cannot render any dynamic content on the preview/live page.
+
+### Final notes:
+
+- I would NOT recommend to try and use a dynamic PHP block.
+- I DO recommend looking into using an existing plugin to handle user interaction on the front-end.
+
+## CGB documentation:
+
 This project was bootstrapped with [Create Guten Block](https://github.com/ahmadawais/create-guten-block).
 
 Below you will find some information on how to run scripts.
